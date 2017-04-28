@@ -1,0 +1,103 @@
+﻿@using Villa.Inventory.Manager.Models
+@model UserModel
+@{
+    //gets users profile data from model
+    string username = "", password = "", firstName = "", lastName = "", email = "";
+    if (Model.email != null)
+    {
+        email = Model.email.Trim();
+    }
+    username = Model.username.Trim();
+    password = Model.password.Trim();
+    firstName = Model.first_name.Trim();
+    lastName = Model.last_name.Trim();
+}
+
+<h2 id="title"> </h2>
+<div class="container">
+    <form method="post" action="@Url.Action("UpdateProfile","Account")">
+
+        @if (ViewBag.success != null)
+        {
+            <div class="alert alert-success alert-dismissable fade in" id="successAlert" style="width:70%; margin:auto; margin-bottom:10px;">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <p>@ViewBag.success</p>
+            </div>
+        }
+        <div class="panel panel-default profilePanel" id="basicInfoPanel">
+            <div class="panel-heading">
+                <span style="font-weight:bolder">Edit Profile</span>
+            </div>
+            <div class="panel-body">
+                <span>Email Address:</span>
+                @Html.TextBoxFor(x => x.email, new { @class = "form-control profileField", type = "text", Value = email, autocomplete="off", maxlength = "100" })
+                <div class="row">
+                    <!--First Name -->
+                    <div class="col-sm-6">
+                        <span>First Name:</span>
+                        @Html.TextBoxFor(x => x.first_name, new { @class = "form-control profileField", type = "text", required = "true", Value = firstName, autocomplete = "off", maxlength = "50" })
+                    </div>
+                    <!-- Last Name -->
+                    <div class="col-sm-6">
+                        <span>Last Name:</span>
+                        @Html.TextBoxFor(x => x.last_name, new { @class = "form-control profileField", type = "text", required = "true", Value = lastName, autocomplete = "off", maxlength = "50" })
+                    </div>
+                </div>
+                <!-- Username -->
+                <span>Username:</span>
+                @Html.TextBoxFor(x => x.username, new { @class = "form-control profileField", type = "text", required = "true", Value = username, autocomplete = "off", maxlength="50" })
+                <div>
+                    <div>
+                        @Html.HiddenFor(x => x.password)
+                        @Html.HiddenFor(x => x.user_id)
+                        @Html.HiddenFor(x => x.user_role)
+                    </div>
+                </div>             
+            </div><!-- end panel-body -->       
+        </div><!-- end of basicInfoPanel -->
+
+
+        <div class="panel panel-default profilePanel" id="passwordPanel">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <span style="font-weight:bolder">Change Password</span>
+                    </div>
+                    <div class="col-xs-6">
+                        <button type="button" class="btn btn-xs pull-right" id="passwordPanelToggleButton">
+                            <span id="passwordPanelSpan" class="fa fa-chevron-up"></span>
+                        </button>
+                    </div>
+                </div>                
+            </div>
+            <!-- inputs to change password -->
+            <div class="panel-body" id="passwordSubpanel">
+                <span>Old Password:</span>
+                <input type="password" class="form-control" id="oldPasswordInput" name="oldPassword" maxlength="100" />
+                <span>New Password:</span>
+                <input type="password" class="form-control" id="newPassword" name="newPassword" maxlength="100" />
+                <span>Confirm New Password:</span>
+                <input type="password" class="form-control" id="confirmPasswordInput" name="confirmPassword" maxlength="100" />
+                <span style="color:red">@ViewBag.error</span>
+            </div>
+        </div><!-- end passwordPanel -->
+        <div id="profileSubmitButtonContainer">
+            <button type="submit" id="editProfileSubmitButton" class="btn">Update Profile</button>
+        </div>
+
+        <!-- Error Messages -->
+        @if (!ViewData.ModelState.IsValid)
+        {            
+            <p id="errorText" style="color:red">@ViewData["passwordError"]</p>
+            <p id="errorText" style="color:red">@ViewData["error"]</p>
+            
+        }
+        <p hidden id="emptyInputErrorText"></p>
+                
+    </form>         
+</div><!--end container-->
+<script type="text/javascript" src="~/Javascript/testJavaScript.js"></script>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+

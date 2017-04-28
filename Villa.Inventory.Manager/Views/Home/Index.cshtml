@@ -1,0 +1,587 @@
+﻿
+@model Villa.Inventory.Manager.Models.HomeModel
+@{
+
+    ViewBag.Title = "Home Page";
+    ViewBag.loggedIn = "Logged in";
+    ViewBag.notLoggedIn = "Not Logged in";
+
+    bool hasPrivelages = false;
+    if (!User.IsInRole("User"))
+    {
+        hasPrivelages = true;
+    }
+}
+<div class="container-fluid" style="width:100%">
+    <div class="row">
+        <div class="col-md-6 col-sm-8">
+            <h2 id="title">
+                VILLA Inventory Management
+            </h2>
+        </div>
+        <div class="col-md-6 col-sm-4">
+            @{if (ViewBag.error != null)
+                {
+                    <div class="alert alert-danger alert-dismissable fade in" id="successAlert">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <p><strong>ERROR: @ViewBag.action Failed</strong></p>
+                        <p>@ViewBag.error</p>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <form method="post" action="@Url.Action("ChangeDatabase", "Home")">
+        <div id="changeDBInput" class="row">
+            <div class="col-sm-10">
+                    <select class="form-control" name="db" id="changeDatabaseDropdown">
+                    <option value="">--Select a Table--</option>
+                    <option value="Table_5">Table 5</option>
+                    <option value="Table_6">Table 6</option>
+                </select>
+            </div>
+            <div class="col-sm-2">
+                <button id="changeDatabaseButton" class="btn" type="submit">Submit</button>
+            </div>
+        </div> 
+    </form>
+
+    <div class="row">
+        <div class="col-xs-12" id="tablePanel">
+            <div class="panel">
+                <div class="panel-heading" id="tablePanelHeading">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <h4><strong>Inventory Logs - @ViewBag.tableName </strong></h4>
+                        </div>
+                        <div class="col-xs-6">
+                            <!--Button Opens the Modal to input new data-->
+                            @if (hasPrivelages)
+                            {
+                                <button class="btn pull-right" data-toggle="modal" data-target="#inputModal" id="modalButton">
+                                    <span class="glyphicon glyphicon-plus-sign"></span> Add New Item
+                                </button>
+                            }                            
+                        </div>
+                    </div>
+                </div><!--end panel-heading-->
+                <div class="panel-body">
+                    <table class="table table-hover table-striped" id="equipmentTable">
+                        <thead>
+                            <tr>                                
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Serial Number</th>
+                                <th>Purchase Date</th>
+                                <th>Assigned Employee</th>
+                                <th>Logged Date</th>
+                                <!--<th>Logged Time</th>-->
+                                <th>Logged Employee</th>
+                                <th>Notes</th>
+                                <th></th><!--empty header for editButton column-->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.InventoryItem)
+                            {
+                                <tr>
+                                    
+                                    <td>@item.description</td>
+                                    <td>@item.category</td>
+                                    <td>@item.quantity</td>
+                                    <td>@item.serial_number</td>
+                                    <td>@item.purchase_date.ToString("M/d/yyyy")</td>
+                                    <td>@item.assigned_employee</td>
+                                    <td>@item.logged_date.ToString("d")</td>
+                                    <!--<td>@item.logged_date.ToString("t")</td>-->
+                                    <td>@item.logged_employee</td>
+                                    <td>@item.notes</td>
+                                    <!--button opens Modal to edit existing data-->
+                                    <td id="buttonRow">
+                                        <div class="row">
+                                            <div class="col-xs-2">
+                                                <button type="button" class="btn btn-xs viewButton" id="viewButton" data-toggle="modal" data-target="#viewModal"
+                                                        onclick="viewModalSetup(this,'@item.inventory_id',
+                                                    '@item.purchase_date.ToString("MM-dd-yyyy")',
+                                                    '@item.purchase_date.ToString("HH:mm:ss")',
+                                                    '@item.logged_date.ToString("MM-dd-yyyy")',
+                                                    '@item.logged_date.ToString("HH:mm")');">
+                                                    <span class="fa fa-search"></span>
+                                                </button>
+                                            </div>
+                                            @if (hasPrivelages)
+                                            {
+                                                <div class="col-xs-2">
+                                                    <button type="button" class="btn btn-xs editButton" id="editButton"
+                                                            onclick="editItemSetup(this,
+                                                        '@item.inventory_id',
+                                                        '@item.purchase_date.ToString("MM-dd-yyyy")',
+                                                        '@item.purchase_date.ToString("HH:mm:ss")');">
+                                                        <span class="glyphicon glyphicon-edit"></span>
+                                                    </button>
+                                                </div>
+                                                <div class="col-xs-2">
+                                                    <button type="button" class="btn btn-xs" id="tableDeleteButton"
+                                                            onclick="tableDeleteSetup(this,
+                                                        '@item.inventory_id',
+                                                        '@item.purchase_date.ToString("MM-dd-yyyy")',
+                                                        '@item.purchase_date.ToString("HH:mm:ss")');">
+                                                        <span class="fa fa-trash-o"></span>
+                                                    </button>
+                                                </div>                                                
+                                            }                                            
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <button type="submit" id="exportButton" class="btn pull-right" data-toggle="modal" data-target="#exportModal" style="margin-right:20px"><span class="glyphicon glyphicon-export"></span> Export to Excel</button>
+                    </div>
+                </div>
+            </div><!--end panel-->
+        </div><!--end #tablePanel-->
+    </div><!--end row-->
+
+    <!--Export Modal-->
+    <div class="modal fade" role="dialog" id="exportModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" id="exportModalHeader">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-10">
+                                <span class="fa fa-file-excel-o fa-2x"></span>
+                                <span id="excelModalHeaderText"><strong>Export to Excel</strong></span>
+                            </div>
+                            <div class="col-xs-2">
+                                <button type="button" class="close pull-right modalCloseButton" data-dismiss="modal">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form method="post" action="@Url.Action("ExportTableData", "Home")">
+                    <div class="modal-body">
+                        <div class="panel-group">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">                                        
+                                    <span style="font-weight:bolder" id="exportFilenameSpan">File Name</span>
+                                    <input type="text" class="form-control" id="exportFilenameInput" name="fileName" placeholder="" autocomplete="off"/>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <span style="font-weight:bolder">Sort By</span>
+                                </div>
+                                <div class="panel-body" id="exportOptionsPanelBody">
+                                    <div id="sortByDiv">
+                                        <select class="form-control exportSort" id="sortBy" name="sortBy">
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <!--Hidden by Default--------------------------------------------------------->
+                                        <select class="form-control exportSort" id="thenBy1" name="thenBy1">
+                                            <option hidden value=""> </option><!--empty Value for default submission-->
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <select class="form-control exportSort" id="thenBy2" name="thenBy2">
+                                            <option hidden value=""> </option>
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <select class="form-control exportSort" id="thenBy3" name="thenBy3">
+                                            <option hidden value=""> </option>
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <select class="form-control exportSort" id="thenBy4" name="thenBy4">
+                                            <option hidden value=""> </option>
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <select class="form-control exportSort" id="thenBy5" name="thenBy5">
+                                            <option hidden value=""> </option>
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <select class="form-control exportSort" id="thenBy6" name="thenBy6">
+                                            <option hidden value=""> </option>
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                        <select class="form-control exportSort" id="thenBy7" name="thenBy7">
+                                            <option hidden value=""> </option>
+                                            <option value="description" class="description">Description</option>
+                                            <option value="category" class="category">Category</option>
+                                            <option value="serialNumber" class="serialNumber">Serial Number</option>
+                                            <option value="quantity" class="quantity">Quantity</option>
+                                            <option value="purchaseDate" class="purchaseDate">Purchase Date</option>
+                                            <option value="assignedEmployee" class="assignedEmployee">Assigned Employee</option>
+                                            <option value="loggedDate" class="loggedDate">Logged Date</option>
+                                            <option value="loggedEmployee" class="loggedEmployee">Logged Employee</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-xs" type="button" id="addSortButton"><span class="glyphicon glyphicon-plus" /></button> <button class="btn btn-xs" type="button" id="removeSortButton"><span class="glyphicon glyphicon-minus" /></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="row">
+                                        <div class="col-xs-6">
+                                            <span style="font-weight:bolder">Date Range</span>
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <button class="btn btn-xs pull-right" type="button" id="dateRangeToggle">
+                                                <span class="glyphicon glyphicon-chevron-down" id="dateRangeToggleSpan"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-body" id="dateRangePanelBody">
+                                    <select class="form-control" name="dateSort">
+                                        <option value="purchase">Purchase Date</option>
+                                        <option value="logged">Logged Date</option>
+                                    </select>
+                                    <br />
+                                    <div class="col-xs-6">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                From
+                                            </span>
+                                            <input type="text" class="export-date-picker form-control" id="exportStartDate" name="startDate" />
+                                            <span class="input-group-addon">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                To
+                                            </span>
+                                            <input type="text" class="export-date-picker form-control" id="exportEndDate" name="endDate"/>
+                                            <span class="input-group-addon">
+                                                <span class="glyphicon glyphicon-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn" id="exportSubmitButton">Export</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--Input Form-->
+    <form id="editInventory" method="post" action="@Url.Action("updateInventory", "Home")">
+        <!--Modal-->
+        <div class="modal fade" role="dialog" id="inputModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" id="newItemModalHeader">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <span id="inputModalGlyph"></span>
+                                <span id="inputModalTitle"></span>
+                            </div>
+                            <div class="col-xs-5">
+                                <!--Delete Button - only visible when editing existing data-->
+                                <button type="button" class="btn pull-right" name="submit" value="delete" id="deleteButton" data-toggle="modal" data-target="#confirmModal" data-backdrop="static"><span class="glyphicon glyphicon-trash"></span> Delete Item</button>
+                            </div>
+                            <div class="col-xs-1">
+                                <button type="button" class="close modalCloseButton pull-right" data-dismiss="modal">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="form-group">
+                            <div class="row">
+                                <!--Description-->
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.description)<span>  *</span>
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.description, new { @class = "form-control", required = "true", id = "descriptionInput", maxlength = "100" })
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!--Category-->
+                                <div class="col-xs-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.category)<span>  *</span>
+                                    @Html.DropDownListFor(x => x.InventoryEditItem.category, new SelectList(Enum.GetValues(typeof(Villa.Inventory.Manager.Models.categoryEnum))), "--Select One--", new { @class = "form-control", required = "true", id = "categoryInput" })
+                                </div>
+                                <!--Quantity-->
+                                <div class="col-xs-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.quantity)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.quantity, new { @class = "form-control", type = "number", required = "true", id = "quantityInput", min = "1"/*, max = "100000000"*/ })
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!--Serial Number-->
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.serial_number)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.serial_number, new { @class = "form-control", id = "serial_numberInput", maxlength = "100", autocomplete="off" })
+
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!--Purchase Date - dd/mm/yyyy-->
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.purchase_date_string)<span>  *</span>
+                                    <div class="input-group" style="margin-bottom:5px">
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                        @Html.TextBoxFor(x => x.InventoryEditItem.purchase_date_string, new { @class = "form-control date-picker", type = "text", required = "true", id = "purchase_date_stringInput"})
+                                    </div>
+                                </div>
+                                <!--Purchase Time-->
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.purchase_time_string)<span></span>
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-time"></span>
+                                        </span>
+                                        @Html.TextBoxFor(x => x.InventoryEditItem.purchase_time_string, new { @class = "form-control", type = "time", id = "purchase_time_stringInput" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!--Assigned Employee-->
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.assigned_employee)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.assigned_employee, new { @class = "form-control", id = "assigned_employeeInput", maxlength = "100", autocomplete="off" })
+                                </div>
+                            </div>                       
+                            <div class="row">
+                                <!--Notes-->
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.notes)
+                                    @Html.TextAreaFor(x => x.InventoryEditItem.notes, new { @class = "form-control", id = "notesInput", maxlength = "250", autocomplete="off" })
+                                </div>
+                            </div>
+                            <!--Inventory ID-->
+                            @Html.HiddenFor(x => x.InventoryEditItem.inventory_id, new { @class = "form-control", type = "hidden", id = "inventory_idInput" })
+
+
+                        </div><!--end form group-->
+                    </div><!--end container-->
+
+                    <div class="panel-footer">
+                        <div id="emptyRequiredErrorContainer">
+                            <i id="emptyRequiredErrorIcon">&nbsp;</i>
+                            <p id="emptyRequiredError"></p>
+                        </div>
+                        <!--Submit Button-->
+                        <button type="submit" class="btn" name="submit" value="new" id="newItemButton"> <!--onclick="printValues()"--> Submit</button>
+                    </div>
+
+                </div><!--end modal-content-->
+            </div><!--end modal-dialog-->
+        </div><!--end modal-->
+        <!--Delete Confirmation Modal-->
+        <div class="modal fade" role="dialog" id="confirmModal">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header" id="confirmModalHeader">
+                        <p>Are You Sure?</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <!--Confirm Delete Button-->
+                            <button type="submit" name="submit" value="delete" class="form-control" id="deleteConfirmButton"><span class="glyphicon glyphicon-ok"></span> Confirm</button>
+                        </div>
+                        <div class="col-xs-6">
+                            <!--Cancel Delete Button-->
+                            <button type="button" class="form-control" data-dismiss="modal" id="deleteCancelButton"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <!--empty footer-->
+                    </div>
+                </div>
+            </div>
+        </div><!--end #confirmModal-->
+    </form>
+    <!--END FORM-->
+    <!--View Modal-->
+
+    <div class="modal fade" role="dialog" id="viewModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" id="viewModalHeader">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <span class="fa fa-search fa-2x"></span>
+                            <span id="viewModalHeaderText"><strong>View Item</strong></span>
+                        </div>
+                        <div class="col-xs-5">
+                            @if (hasPrivelages)
+                            {
+                                <button class="btn pull-right" id="viewModalEditButton"><span class="fa fa-edit">&nbsp;</span>Edit Item</button>
+                            }
+                        </div>
+                        <div class="col-xs-1">
+                            <button type="button" class="close modalCloseButton pull-right" data-dismiss="modal">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="form-group">
+                        <div class="row">
+                            <!--Description-->
+                            <div class="col-sm-12">
+                                @Html.LabelFor(x => x.InventoryEditItem.description)
+                                <input type="text" class="form-control default-cursor" id="descriptionInfo" readonly />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Category-->
+                            <div class="col-xs-6">
+                                @Html.LabelFor(x => x.InventoryEditItem.category)
+                                <input type="text" class="form-control default-cursor" id="categoryInfo" readonly />
+                            </div>
+                            <!--Quantity-->
+                            <div class="col-xs-6">
+                                @Html.LabelFor(x => x.InventoryEditItem.quantity)
+                                <input type="number" class="form-control default-cursor" id="quantityInfo" readonly />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Serial Number-->
+                            <div class="col-sm-12">
+                                @Html.LabelFor(x => x.InventoryEditItem.serial_number)
+                                <input type="text" class="form-control default-cursor" id="serialNumberInfo" readonly />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Purchase Date - dd/mm/yyyy-->
+                            <div class="col-sm-6">
+                                @Html.LabelFor(x => x.InventoryEditItem.purchase_date_string)
+                                <div class="input-group" style="margin-bottom:5px">
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                    <input type="text" class="form-control default-cursor" id="purchaseDateInfo" readonly />
+                                </div>
+                            </div>
+                            <!--Purchase Time-->
+                            <div class="col-sm-6">
+                                @Html.LabelFor(x => x.InventoryEditItem.purchase_time_string)<span></span>
+                                <div class="input-group">
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-time"></span>
+                                    </span>
+                                    <input type="time" class="form-control default-cursor" id="purchaseTimeInfo" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Assigned Employee-->
+                            <div class="col-sm-12">
+                                @Html.LabelFor(x => x.InventoryEditItem.assigned_employee)
+                                <input type="text" class="form-control default-cursor" id="assignedEmployeeInfo" readonly />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Logged Employee-->
+                            <div class="col-sm-12">
+                                @Html.LabelFor(x => x.InventoryEditItem.logged_employee)
+                                <input type="text" class="form-control default-cursor" id="loggedEmployeeInfo" readonly />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Logged Date-->
+                            <div class="col-sm-6">
+                                @Html.LabelFor(x => x.InventoryEditItem.logged_date_string)
+                                <div class="input-group" style="margin-bottom:5px">
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                    <input type="text" class="form-control default-cursor" id="loggedDateInfo" readonly />
+                                </div>
+                            </div>
+                            <!--Logged Time-->
+                            <div class="col-sm-6">
+                                @Html.LabelFor(x => x.InventoryEditItem.logged_time_string)
+                                <div class="input-group">
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-time"></span>
+                                    </span>
+                                    <input type="time" class="form-control default-cursor" id="loggedTimeInfo" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <!--Notes-->
+                            <div class="col-sm-12">
+                                @Html.LabelFor(x => x.InventoryEditItem.notes)
+                                <textarea class="form-control default-cursor" id="notesInfo" readonly></textarea>
+                            </div>
+                        </div>
+                        <!--Inventory ID-->
+                        @Html.HiddenFor(x => x.InventoryEditItem.inventory_id, new { @class = "form-control", type = "hidden", id = "inventory_idInput" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!--end container-fluid-->
+<script type="text/javascript" src="~/Javascript/testJavaScript.js"></script>
+
+
+

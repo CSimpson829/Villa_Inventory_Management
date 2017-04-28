@@ -1,0 +1,216 @@
+﻿
+function printRows(inventory_id) {
+    $("#equipmentTable tr").children().each(function () {
+        console.log($(this).text().trim())
+    });
+}
+function editItemSetup(element, id, date, time){
+    var valueArray = new Array();
+    $(element).closest("td").siblings().each(function () {
+        valueArray.push($(this).text().trim());
+    });
+    var editGlyphSpan = document.createElement('span');
+    editGlyphSpan.setAttribute("class", "glyphicon glyphicon-edit");
+    $("#inputModalTitle").text(" Edit Item");
+    $("#inputModalTitle").prepend(editGlyphSpan);
+    $("#deleteButton").show();
+    $("#inventory_idInput").val(id);
+    $("#purchase_date_stringInput").val(date);
+    $("#purchase_time_stringInput").val(time);
+
+    $("#inputModal").modal("show");
+    $("#removeButton").show();
+    $("#descriptionInput").val(valueArray[0]);
+    $("#categoryInput").val(valueArray[1]);
+    $("#quantityInput").val(valueArray[2]);
+    $("#serial_numberInput").val(valueArray[3]);
+    
+    $("#assigned_employeeInput").val(valueArray[5]);
+    $("#logged_employeeInput").val(valueArray[8]);
+    $("#notesInput").val(valueArray[9]);
+    
+}
+
+function printValues() {
+    console.log("Item Description: " + $('#descriptionInput').val());
+    console.log("Serial Number:" + $('#serial_numberInput').val());
+
+    console.log("Purchase Date: " + $('#purchase_date_stringInput').val());
+    console.log("Purchase Time: " + $('#purchase_time_stringInput').val());
+
+    console.log("Assigned Employee: " + $('#assigned_employeeInput').val());   
+    console.log("Logged User: " + $('#logged_employeeInput').val());
+    console.log("Logged Date: " + $('#logged_date_stringInput').val());
+    console.log("Logged Time: " + $('#logged_time_stringInput').val());
+    console.log("Notes: " + $('#notesnotesInput').val());
+}
+
+/*
+function editItemSetup(inventory_id, description, category, quantity, serial_number, purchase_date_string, purchase_time_string, assigned_employee, logged_employee, notes) {
+    $("#inputModal").modal("show");
+    $("#deleteButton").show();
+    $("#inventory_idInput").val(inventory_id);
+    $("#descriptionInput").val(description);
+    $("#categoryInput").val(category);
+    $("#quantityInput").val(quantity);
+    $("#purchase_date_stringInput").val(purchase_date_string);
+    $("#purchase_time_stringInput").val(purchase_time_string);
+    $("#serial_numberInput").val(serial_number);
+    $("#assigned_employeeInput").val(assigned_employee);
+    $("#logged_employeeInput").val(logged_employee);
+    $("#notesInput").val(notes.trim());
+    //onclick="editItemSetup('@item.inventory_id', '@item.description','@item.category','@item.quantity','@item.serial_number','@item.purchase_date.ToString("yyyy-MM-dd")','@item.purchase_date.ToString("HH:mm:ss")', '@item.assigned_employee','@item.logged_date.ToString("d")', '@item.logged_date.ToString("t")', '@item.logged_employee','@item.notes');"
+}
+*/
+function newItemSetup() {
+
+    var newGlyphSpan = document.createElement('span');
+    newGlyphSpan.setAttribute("class", "glyphicon glyphicon-plus-sign");
+    $("#inputModalTitle").text(" Add New Item");
+    $("#inputModalTitle").prepend(newGlyphSpan);
+
+    $("#deleteButton").hide();
+    $("#inventory_idInput").val('');
+    $("#descriptionInput").val('');
+    $("#categoryInput").val('');
+    $("#quantityInput").val('');
+    $("#purchase_date_stringInput").val('');
+    $("#purchase_time_stringInput").val('');
+    $("#serial_numberInput").val('');
+    $("#assigned_employeeInput").val('');
+    $("#logged_employeeInput").val('');
+    $("#notesInput").val('');
+}
+function viewModalSetup(element, id, purchasedate, purchasetime, logdate, loggedtime) {
+    var valueArray = new Array();
+    $(element).closest("td").siblings().each(function () {
+        valueArray.push($(this).text().trim());
+    });
+    /*
+    console.log(valueArray);
+    console.log(id);
+    console.log(purchasedate);
+    console.log(logdate);
+    console.log(purchasetime);
+    console.log(loggedtime);
+    */
+    var purchaseDate = new Date(purchasedate);
+    var loggedDate = new Date(logdate);
+    var formattedPurchaseDate = purchaseDate.getMonth() + 1 + "/" + purchaseDate.getDate() + "/" + purchaseDate.getFullYear();
+    console.log(formattedPurchaseDate);
+    var formattedLoggedTime = loggedDate.getMonth() + 1 + "/" + loggedDate.getDate() + "/" + loggedDate.getFullYear();
+
+    //$("#deleteButton").show();    
+    //$("#purchaseTimeInfo").text(time);
+    //$("#inputModal").modal("show");
+    //$("#removeButton").show();
+
+    $("#inventory_idInput").val(id);
+
+    $("#purchaseDateInfo").text(purchasedate);
+    $("#purchaseTimeInfo").text(purchasetime);
+    $("#loggedDateInfo").text(logdate);
+    $("#loggedTimeInfo").text(loggedtime);
+
+    $("#descriptionInfo").text(valueArray[0]);
+    $("#categoryInfo").text(valueArray[1]);
+    $("#quantityInfo").text(valueArray[2]);
+    $("#serialNumberInfo").text(valueArray[3]);
+
+    $("#assignedEmployeeInfo").text(valueArray[5]);
+    $("#loggedEmployeeInfo").text(valueArray[8]);
+    $("#notesInfo").text(valueArray[9]);
+
+}
+
+var numberOfSorts = 0;
+var selectText = ["Description", "Category", "Serial Number", "Quantity", "Purchase Date", "Assigned Employee", "Logged Date", "Logged Employee"];
+var selectValues = ["description", "category", "serialNumber", "quantity", "purchaseDate", "assignedEmployee", "loggedDate", "loggedEmployee"];
+function addSort() {
+    if (numberOfSorts < 7) {
+        numberOfSorts++;
+        console.log("addSort() i = " + numberOfSorts);
+        var sortBySelect = document.createElement("select");
+        sortBySelect.className = ("form-control");
+        sortBySelect.id = ("sortBy" + numberOfSorts);
+        sortBySelect.name = ("sortBy" + numberOfSorts);
+        sortBySelect.name = ("sortBy" + numberOfSorts);
+        for (var j = 0; j < selectValues.length; j++) {
+            var option = document.createElement("option");
+            option.value = selectValues[j];
+            option.text = selectText[j];
+        
+            sortBySelect.appendChild(option);
+        }
+        $("#addSortButton").before(sortBySelect);
+        $("#removeSortButton").show();
+    }
+    
+    
+}
+function removeSort() {
+    if (numberOfSorts > 0) {
+        $("#sortBy" + numberOfSorts).remove();
+        numberOfSorts--;
+        console.log("removeSort() i = " + numberOfSorts);
+    }
+    if (numberOfSorts == 0) {
+        $("#removeSortButton").hide();
+    }
+}
+function resetExportModal(){
+    $("#exportModal").modal("hide");
+    while (numberOfSorts > 0) {
+        $("#sortBy" + numberOfSorts).remove();
+        numberOfSorts--;
+    }
+    $("removeSortButton").hide();
+}
+
+$(document).ready(function () {
+    $("#equipmentTable").DataTable({       
+        "columns": [
+            null, null, null, null, null, null, null, null, null, null, { "orderable": false }],
+        "scrollX": true
+    });
+
+    $('#dateTest').datepicker({
+        todayBtn: "linked"
+    });
+    $('.date-picker').datepicker();
+
+
+    $("#deleteCancelButton").click(function () {
+        $("#confirmModal").modal("hide");
+    });
+    
+    $("#confirmModal").on("hidden.bs.modal", function () {
+        ("#inputModal").modal("show");
+    });
+    $("#modalButton").click(function () {
+        newItemSetup();
+    });
+    $("#viewButton").click(function () {
+        viewModalSetup();
+    });
+
+    $("#addSortButton").click(function () {
+        addSort();
+    })
+    $("#removeSortButton").click(function () {
+        removeSort();
+    })
+    $("#exportButton").click(function () {
+        $("#removeSortButton").hide();
+    });
+    $("#exportSubmitButton").click(function () {
+        resetExportModal();
+    })
+});
+
+
+
+
+
+
+

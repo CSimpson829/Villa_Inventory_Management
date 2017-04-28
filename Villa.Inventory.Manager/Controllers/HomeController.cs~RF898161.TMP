@@ -1,0 +1,264 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using Dapper;
+using System.Data.SqlClient;
+using System.Configuration;
+using Villa.Inventory.Manager.Models;
+using OfficeOpenXml;
+using System.IO;
+
+namespace Villa.Inventory.Manager.Controllers
+{
+    public class HomeController : Controller
+    {
+        public ActionResult Index(String successMessage, String actionMessage, String errorMessage)
+        {
+                ActionResult result = null;
+                var model = new Inventory.Manager.Models.HomeModel();
+
+                using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+                {
+                    var inventoryItems = new List<InventoryItem>();
+
+                    conn.Open();
+
+                    var sql = "SELECT inventory_id, description, category, quantity, serial_number, purchase_date, assigned_employee, logged_date, logged_employee, notes FROM Table_6";
+
+                    inventoryItems.AddRange(conn.Query<InventoryItem>(sql, new {}).ToList());
+
+                    model.InventoryItem = inventoryItems;            
+                }
+                ViewBag.actionMessage = actionMessage;
+                ViewBag.successMessage = successMessage;
+                ViewBag.errorMessage = errorMessage;
+                result = View("~/Views/Home/Index.cshtml", model);
+                return result;   
+        }
+
+        public ActionResult ExportTableData(Villa.Inventory.Manager.Models.HomeModel inventoryDetails)
+        {
+            var model = new Inventory.Manager.Models.HomeModel();
+            using(MemoryStream memoryStream = new MemoryStream())
+            {
+                using (var excelPackage = new ExcelPackage())
+                {
+                    excelPackage.Workbook.Worksheets.Add("List of Inventory");
+                    var ws = excelPackage.Workbook.Worksheets[1];
+
+                    ws.Cells["A1"].Value = "Description";
+                    ws.Cells["B1"].Value = "Category";
+                    ws.Cells["C1"].Value = "Quantity";
+                    ws.Cells["D1"].Value = "Serial Number";
+                    ws.Cells["E1"].Value = "Purchase Date";
+                    ws.Cells["F1"].Value = "Assigned Employee";
+                    ws.Cells["G1"].Value = "Logged Date";
+                    ws.Cells["H1"].Value = "Logged Employee";
+                    ws.Cells["I1"].Value = "Notes";
+                    /*
+                        //var items = model.InventoryItem.ToList();
+                        //var items = inventoryDetails.InventoryItem.ToList();
+                        //for(var item=0; item<items.Count(); item++)
+                        //{
+                        //var items = model.
+                        foreach(var item in items) {
+                            ws.Cells[$"A2"].Value = inventoryDetails.InventoryEditItem.description;
+                            ws.Cells[$"B2"].Value = inventoryDetails.InventoryEditItem.category;
+                            ws.Cells[$"C2"].Value = inventoryDetails.InventoryEditItem.quantity;
+                            ws.Cells[$"D2"].Value = inventoryDetails.InventoryEditItem.serial_number;
+                            ws.Cells[$"E2"].Value = inventoryDetails.InventoryEditItem.purchase_date;
+                            ws.Cells[$"F2"].Value = inventoryDetails.InventoryEditItem.assigned_employee;
+                            ws.Cells[$"G2"].Value = inventoryDetails.InventoryEditItem.logged_date;
+                            ws.Cells[$"H2"].Value = inventoryDetails.InventoryEditItem.logged_employee;
+                            ws.Cells[$"I2"].Value = inventoryDetails.InventoryEditItem.notes;
+                            //}
+                        }
+                    */
+
+                    ws.Cells[$"A2"].Value = "Description1";
+                    ws.Cells[$"B2"].Value = "Category1";
+                    ws.Cells[$"C2"].Value = "Quantity1";
+                    ws.Cells[$"D2"].Value = "Serial Number1";
+                    ws.Cells[$"E2"].Value = "Purchase Date 1";
+                    ws.Cells[$"F2"].Value = "Assigned Employee 1";
+                    ws.Cells[$"G2"].Value = "Logged Date 1";
+                    ws.Cells[$"H2"].Value = "Logged Employee 1";
+                    ws.Cells[$"I2"].Value = "Notes 1";
+
+                    ws.Cells[1, 8, ws.Dimension.End.Row, 8].Style.Numberformat.Format = "mm/dd/yyyy hh:mm:ss";
+                    ws.Cells[1, 14, ws.Dimension.End.Row, 15].Style.Numberformat.Format = "$#,###.00";
+
+                    ws.Cells[1, 1, ws.Dimension.End.Row, ws.Dimension.End.Column].AutoFitColumns();
+                    ws.View.FreezePanes(2, 1);
+
+                    excelPackage.Save();
+                }
+                memoryStream.Flush();
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                return new FileContentResult(memoryStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = $"Inventory.xls" };
+            }
+        }
+
+        //Enter row into Database / Edit row in Database
+        public ActionResult UpdateInventory(Villa.Inventory.Manager.Models.HomeModel inventoryDetails, String submit)
+        {
+            int InventoryID = inventoryDetails.InventoryEditItem.inventory_id;
+            String actionMessage = "";
+            String successMessage="";
+            String errorMessage = "";
+
+            var sql = "";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                
+                if (String.Equals(submit, "new")) {
+                    //Enter new Row
+                    if (InventoryID == 0)
+                    {
+                        sql = @"INSERT INTO Table_6 (description, category, quantity, serial_number, purchase_date, assigned_employee, logged_date, logged_employee, notes)
+                                    VALUES (@Description, @Category, @Quantity, @SerialNumber, @PurchaseDate, @AssignedEmployee, @LoggedDate, @LoggedEmployee, @Notes)";
+                        
+                        actionMessage = "Insert";
+                        successMessage = "New Inventory Item Successfully Inserted";
+                    }
+                    //Updating Existing Row
+                    else
+                    { 
+                        sql = @"UPDATE Table_6 SET description = @Description, category = @Category, quantity= @Quantity, serial_number=@SerialNumber, purchase_date=@PurchaseDate,
+                                    assigned_employee=@AssignedEmployee, logged_date=@LoggedDate, logged_employee=@LoggedEmployee, notes=@Notes WHERE inventory_id =@InventoryID";
+                       
+                        actionMessage = "Update";
+                        successMessage = "Inventory Item Successfully Updated";
+                    }
+
+                    errorMessage = executeSQL(inventoryDetails, sql, InventoryID);
+                }
+                else if (String.Equals(submit, "delete"))
+                {
+                    actionMessage = "Delete";
+                    successMessage = DeleteInventoryItem(inventoryDetails);
+                }
+            }
+
+            return RedirectToAction("Index", new { successMessage = successMessage, actionMessage = actionMessage, errorMessage = errorMessage });
+        }
+        public String executeSQL(Villa.Inventory.Manager.Models.HomeModel inventoryDetails, string sql,  int InventoryID)
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    conn.Open();
+
+                    cmd.Parameters.AddWithValue("@Description", inventoryDetails.InventoryEditItem.description);
+                    cmd.Parameters.AddWithValue("@Category", inventoryDetails.InventoryEditItem.category);
+                    cmd.Parameters.AddWithValue("@Quantity", inventoryDetails.InventoryEditItem.quantity);
+                    cmd.Parameters.AddWithValue("@SerialNumber", inventoryDetails.InventoryEditItem.serial_number);
+                    cmd.Parameters.AddWithValue("@PurchaseDate", formatDate(inventoryDetails.InventoryEditItem.purchase_date_string, inventoryDetails.InventoryEditItem.purchase_time_string));
+                    cmd.Parameters.AddWithValue("@AssignedEmployee", inventoryDetails.InventoryEditItem.assigned_employee);
+                    cmd.Parameters.AddWithValue("@LoggedDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@LoggedEmployee", inventoryDetails.InventoryEditItem.logged_employee);
+                    cmd.Parameters.AddWithValue("@Notes", inventoryDetails.InventoryEditItem.notes);
+                    cmd.Parameters.AddWithValue("@InventoryID", InventoryID);
+
+                    foreach (SqlParameter parameter in cmd.Parameters)
+                    {
+                        if (parameter.Value == null)
+                        {
+                            parameter.Value = DBNull.Value;
+                        }
+                    }
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception e)
+                    {
+                        return(e.Message);                        
+                    }
+                    
+                }
+            }
+            return null;
+        }
+
+        //sets input to correct format to be inserted into Database
+        public DateTime formatDate(DateTime date, DateTime time)
+        {
+            String formatted_purchase_date = date.ToString("d")+" "+time.ToString("HH:mm:ss tt");
+            return Convert.ToDateTime(formatted_purchase_date);
+        } 
+       /* public String formatInputString(String inputString)
+        {
+            if(string.IsNullOrEmpty(inputString) || !(inputString.Contains("\'")))
+            {
+                return inputString;
+            }
+            else{
+                String reformattedString = "";
+                String[] splitString = inputString.Split('\'');
+                for (int i = 0; i < splitString.Length; i++)
+                {
+                    if (i < splitString.Length - 1) { reformattedString += splitString[i] + "\'\'"; }
+                    else { reformattedString += splitString[splitString.Length - 1]; }
+                }
+                return reformattedString;
+            }
+        }
+        */
+
+        //Delete Row from the Database
+        public String DeleteInventoryItem(Villa.Inventory.Manager.Models.HomeModel inventoryDetails)
+        {
+            String message = "";
+            int InventoryID = inventoryDetails.InventoryEditItem.inventory_id;
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                var sql = @"DELETE FROM Table_6 WHERE inventory_id = @inventoryID";
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@inventoryID", InventoryID);
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }            
+            }
+            message = "Inventory Item Successfully Deleted";
+            return message;
+        }
+
+        public ActionResult login(String username, String password)
+        {
+            var model = new Inventory.Manager.Models.HomeModel();
+            var Users = new List<UserModel>();
+            String user_role="";
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                
+                var sql = @"SELECT user_role FROM Login_Table WHERE Username = @username AND Password = @password";
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@password", password);
+                    conn.Open();
+                    //cmd.ExecuteScalar();
+                    user_role = (String)cmd.ExecuteScalar();
+                }
+                model.UserModel = Users;
+            }
+            if(user_role == null)
+            {
+                return RedirectToAction("Index",new {usermodel = model.UserModel, errorMessage = "Login Not Found"});               
+            }
+            else {
+                return RedirectToAction("Index",new {usermodel = model.UserModel, successMessage = user_role, actionMessage = "Login" });               
+            }
+            
+        }
+        
+    }
+   
+}

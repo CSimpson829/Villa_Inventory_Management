@@ -1,0 +1,194 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    background-color:#e6e6e6;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+   /* padding-left: 10px;
+    padding-right: 10px;*/
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    /*max-width: 280px;*/
+}
+
+#title {
+    /*width:90%;*/
+    text-align:left;
+    margin-bottom: 30px;
+}
+
+#nav{
+    padding-top:2px;
+    margin-top:-48px;
+    background-color:white;
+}
+
+#villaLogo{
+    height:60px;
+    margin-left:5px;
+}
+
+.panel-body{
+    border-style:solid;
+    border-width:1px;
+    border-color:lightgray;
+}
+
+.panel-heading{
+    background-color:#a83338;/*#910e0e*/
+    margin:5px;
+    color:white;
+}
+
+.panel-body input{
+    margin-bottom:5px;
+}
+
+.panel-body label{
+    font-size:11px;
+}
+
+#tablePanel{
+     /*width:90%;*/
+     /*min-width:1200px;*/
+     margin:auto;
+}
+
+.modal input{
+    margin-bottom:5px;
+}
+
+.modal-header{
+    margin-bottom:10px;
+    background-color:#a83338;
+    color:white;
+    font-size:large;
+}
+
+#inputModalTitle{
+    font-weight:bolder;
+}
+
+#viewModal strong{
+    color:#a83338;
+}
+#viewModalHeader{
+    color:white;
+}
+/* ---------------------------------------- BUTTONS ---------------------------------------- */
+
+/*Gray Buttons --------------------------------------*/
+#modalButton, #deleteButton, #deleteCancelButton{
+    background-color:white;
+    font-weight:bolder;
+    color:black;
+}
+#deleteCancelButton{
+    margin-left:-10px;
+}
+#modalButton:hover, #deleteCancelButton:hover{
+    background-color:#e6e6e6;/*#f2f2f2;#beb4b4;#e8b4b4;*/
+    color:black;
+}
+#modalButton:active, #deleteCancelButton:active{
+    background-color:#cccccc;
+    color:black;
+}
+
+/*Submit Button --------------------------------------------------------*/
+/*Red*/
+#newItemButton{
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-bottom: 5px;
+    background-color: #e54747;
+    color: white;
+    font-weight: bold;
+}
+#newItemButton:hover{
+    background-color:#e23636;
+}
+#newItemButton:active{
+    background-color:#df2020;/*#c91d1d;*/
+}
+
+/*Delete Button --------------------------------------------------------*/
+#deleteButton:hover{
+    background-color:#de403b;/*Red*/
+    color:white;
+}
+#deleteButton:active{
+    background-color:#c42721;
+    color:white;
+}
+
+/*Edit and Confirm Delete Buttons --------------------------------------*/
+/*Blue*/
+#editButton, #deleteConfirmButton{
+    background-color:#4196cc;
+    color:white;   
+}
+#deleteConfirmButton{
+    margin-left:10px;
+    font-weight:bolder;
+}
+#deleteConfirmButton:hover{
+    background-color:#3082b5;
+}
+#editButton:hover, #deleteConfirmButton:active{
+    background-color:#15608e;
+}
+#editButton:active{
+    background-color:#104b70;
+}
+
+/*View Button-----------------------------------------------------------*/
+/*Gray*/
+#viewButton{
+    background-color:#d9d9d9;/*#e6e6e6*/
+    color:gray;
+}
+#viewButton:hover{
+    background-color:#bfbfbf;
+    color:#595959;
+}
+#viewButton:active{
+    background-color:#999999;/*#808080;*/
+    color:#262626;
+}
+
+/*Modal Close Button----------------------------------------------------*/
+.modalCloseButton{
+    color:white;
+    opacity:0.5;
+}
+.modalCloseButton:hover{
+    color:white;
+    opacity:0.7;
+}
+.modalCloseButton:active{
+    color:white;
+    opacity:1;
+}
+/*----------------------------------------------------------------------*/
+
+/*remove Bootstrap blue border*/
+button:focus{
+    outline:none !important;
+}
+
+

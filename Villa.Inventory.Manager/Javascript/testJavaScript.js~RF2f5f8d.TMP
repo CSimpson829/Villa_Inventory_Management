@@ -1,0 +1,5 @@
+﻿function printValues() {
+    console.log($('#itemDesc').val());
+    console.log($('#serialNum').val());
+    console.log($('#employee').val());
+}

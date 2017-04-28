@@ -1,0 +1,479 @@
+﻿using System;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using Dapper;
+using System.Data.SqlClient;
+using System.Configuration;
+using Villa.Inventory.Manager.Models;
+using OfficeOpenXml;
+using OfficeOpenXml.Drawing;
+using System.IO;
+using System.Drawing;
+
+namespace Villa.Inventory.Manager.Controllers
+{
+    /*
+    Ensures User must log in to access Controller 
+    [Authorize]*/  
+    [Authorize(Roles = "User, Manager, Admin")]
+    public class HomeController : Controller
+    {
+//INDEX    
+        public ActionResult Index(Villa.Inventory.Manager.Models.HomeModel model, String action, String error)
+        {
+            ActionResult result = null;
+
+            model.InventoryItem = getInventoryData();
+
+            ViewBag.action = action;           
+            ViewBag.error = error;
+            
+            result = View("~/Views/Home/Index.cshtml", model);
+            return result;
+        }
+        
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Get Inventory Data from the Database
+        public List<InventoryItem> getInventoryData()
+        {
+            var result = new List<InventoryItem>();
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                var inventoryItems = new List<InventoryItem>();
+
+                conn.Open();
+
+                var sql = "SELECT inventory_id, description, category, quantity, serial_number, purchase_date, assigned_employee, logged_date, logged_employee, notes FROM Table_6";
+
+                inventoryItems.AddRange(conn.Query<InventoryItem>(sql, new { }).ToList());
+
+                result = inventoryItems;
+            }
+            return result;
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Takes the values of the Sort By inputs and puts them in a List
+        public List<String> createSortList(String sortBy, String sortBy1, String sortBy2, String sortBy3, String sortBy4, String sortBy5, String sortBy6, String sortBy7)
+        {
+            String[] sorts = { sortBy, sortBy1, sortBy2, sortBy3, sortBy4, sortBy5, sortBy6, sortBy7 };
+            List<String> sortsList = new List<String>();
+            foreach(String value in sorts)
+            {
+                if (!String.IsNullOrEmpty(value))
+                    sortsList.Add(value);
+            }
+            return sortsList;
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+        
+//Test Function for Exporting
+        public string switchTest(String sortBy, String thenBy1, String thenBy2, String thenBy3, String thenBy4, String thenBy5, String thenBy6, String thenBy7, string fileName)
+        {
+            String[] sorts = { sortBy, thenBy1, thenBy2, thenBy3, thenBy4, thenBy5, thenBy6, thenBy7 };
+            List<String> sortsList = new List<String>();
+            foreach (String value in sorts)
+            {
+                if (!String.IsNullOrEmpty(value))
+                    sortsList.Add(value);
+            }
+            //return sortsList.Count;
+            return fileName;
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Export Data from the DataTable to Excel
+        public ActionResult ExportTableData(Villa.Inventory.Manager.Models.HomeModel inventoryDetails, String dateSort, String startDate, String endDate, String sortBy, String thenBy1, String thenBy2, String thenBy3, String thenBy4, String thenBy5, String thenBy6, String thenBy7, String fileName)
+        {
+            var model = new Inventory.Manager.Models.HomeModel()
+            {
+                InventoryItem = getInventoryData()
+            };
+
+            using(MemoryStream memoryStream = new MemoryStream())
+            {
+                using (var ep = new ExcelPackage(memoryStream))
+                {
+                    ep.Workbook.Worksheets.Add("List of Inventory");
+                    var ws = ep.Workbook.Worksheets[1];
+
+                    ws.Cells["A1"].Value = "Description";
+                    ws.Cells["B1"].Value = "Category";
+                    ws.Cells["C1"].Value = "Quantity";
+                    ws.Cells["D1"].Value = "Serial Number";
+                    ws.Cells["E1"].Value = "Purchase Date";
+                    ws.Cells["F1"].Value = "Assigned Employee";
+                    ws.Cells["G1"].Value = "Logged Date";
+                    ws.Cells["H1"].Value = "Logged Employee";
+                    ws.Cells["I1"].Value = "Notes";
+
+                    var headerCells = ws.Cells["A1:I1"];
+                    headerCells.Style.Font.Bold = true;
+
+                    //Color fontColor = ColorTranslator.FromHtml("#ffffff");
+                    //headerCells.Style.Font.Color.SetColor(fontColor);
+
+                    headerCells.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    //Color cellColor = System.Drawing.ColorTranslator.FromHtml("#a83338");
+                    Color cellColor = System.Drawing.ColorTranslator.FromHtml("#dfdfdf");
+                    headerCells.Style.Fill.BackgroundColor.SetColor(cellColor);
+                    headerCells.AutoFitColumns();
+                    ws.Row(1).Height=20;
+
+                    List<String> sortByList = createSortList(sortBy, thenBy1, thenBy2, thenBy3, thenBy4, thenBy5, thenBy6, thenBy7);
+                    
+
+                    var items = exportDetails(model, sortByList, dateSort, startDate, endDate);
+                    
+                    for (var item=0; item<items.Count(); item++)
+                    {
+                        ws.Cells[$"A{item + 2}"].Value = items[item].description.Trim();
+                        ws.Cells[$"B{item + 2}"].Value = items[item].category.Trim();
+                        ws.Cells[$"C{item + 2}"].Value = items[item].quantity;
+                        ws.Cells[$"D{item + 2}"].Value = items[item].serial_number.Trim();
+                        ws.Cells[$"E{item + 2}"].Value = items[item].purchase_date.ToString();
+                        ws.Cells[$"F{item + 2}"].Value = items[item].assigned_employee.Trim();
+                        ws.Cells[$"G{item + 2}"].Value = items[item].logged_date.ToString();
+                        ws.Cells[$"H{item + 2}"].Value = items[item].logged_employee.Trim();
+                        ws.Cells[$"I{item + 2}"].Value = items[item].notes.Trim();
+
+                        if ((item+1) % 2 == 0)
+                        {
+                            ws.Cells[$"A{item + 2}:I{item + 2}"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            Color rowColor = System.Drawing.ColorTranslator.FromHtml("#efefef");
+                            ws.Cells[$"A{item + 2}:I{item + 2}"].Style.Fill.BackgroundColor.SetColor(rowColor);
+                        }                        
+                    }
+                    ws.Cells[1, 1, ws.Dimension.End.Row, ws.Dimension.End.Column].AutoFitColumns();
+
+                    ep.Save();
+                }
+                memoryStream.Flush();
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                fileName = checkFilename(fileName);
+
+                return new FileContentResult(memoryStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { FileDownloadName = fileName };
+            }
+        }
+//--------------------------------------------------------------------------------------------------------------------------
+
+        public String checkFilename(String filename)
+        {
+            if (filename.EndsWith(".xlsx")){
+                return filename;
+            }
+            else
+            {
+                return filename + ".xlsx";
+            }
+        }
+
+//Sorts the Table Data List to be exported
+        public List<InventoryItem> exportDetails(Villa.Inventory.Manager.Models.HomeModel model, List<String> sortByList, String dateSort, String startDate, String endDate)
+        {
+            //Debug.WriteLine("------------------------------------------------------------------------------------ Inside ExportDetails");
+            DateTime start, end;
+            if (!String.IsNullOrEmpty(startDate))
+            {
+                start = Convert.ToDateTime(startDate);
+            }
+            else { start = DateTime.MinValue; }
+            if (!String.IsNullOrEmpty(endDate))
+            {
+                end = Convert.ToDateTime(endDate);
+                end = end.AddDays(1);//Adds 1 day to the end date to make it inclusive
+            }
+            else { end = DateTime.MaxValue; }
+
+           
+    //If the User sets range by Purchase Date (default)
+            if (String.Equals(dateSort, "purchase"))
+            {
+                var items = model.InventoryItem.Where(x => x.purchase_date > start).Where(x => x.purchase_date <= end).OrderBy(x => x.description);
+                
+                switch (sortByList[0])
+                {
+                    case "category":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.category);
+                        break;
+                    case "serialNumber":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.serial_number);
+                        break;
+                    case "purchaseDate":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.purchase_date);
+                        break;
+                    case "assignedEmployee":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.assigned_employee);
+                        break;
+                    case "loggedDate":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.logged_date);
+                        break;
+                    case "loggedEmployee":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.logged_employee);
+                        break;
+                    case "quantity":
+                        items = model.InventoryItem.Where(x => x.purchase_date >= start).Where(x => x.purchase_date <= end).OrderBy(x => x.quantity);
+                        break;
+                }
+                
+                if (sortByList.Count > 1)
+                {
+                    foreach (var sortBy in sortByList)
+                    items = formatThenBys(items, sortBy);
+                }
+                var itemList = items.ToList();
+                return itemList;
+            }
+    //if the User sets range by Logged Date
+            else
+            {
+                var items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.description);
+                switch (sortByList[0])
+                {
+                    case "category":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.category);
+                        break;
+                    case "serialNumber":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.serial_number);
+                        break;
+                    case "purchaseDate":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.purchase_date);
+                        break;
+                    case "assignedEmployee":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.assigned_employee);
+                        break;
+                    case "loggedDate":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.logged_date);
+                        break;
+                    case "loggedEmployee":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.logged_employee);
+                        break;
+                    case "quantity":
+                        items = model.InventoryItem.Where(x => x.logged_date >= start).Where(x => x.logged_date <= end).OrderBy(x => x.quantity);
+                        break;
+                }
+                if (sortByList.Count > 1)
+                {
+                    foreach (var sortBy in sortByList)
+                        items = formatThenBys(items, sortBy);
+                }
+                var itemList = items.ToList();
+                return itemList;
+            }            
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Test Function
+        public String testThenBys(System.Linq.IOrderedEnumerable<Villa.Inventory.Manager.Models.InventoryItem> item, String sortBy)
+        {
+            return sortBy;
+        }
+
+//Sets the additional "Then By" sorts if necessary
+        public System.Linq.IOrderedEnumerable<Villa.Inventory.Manager.Models.InventoryItem> formatThenBys(System.Linq.IOrderedEnumerable<Villa.Inventory.Manager.Models.InventoryItem> item, String sortBy)
+        {
+            var items = item.ThenBy(x => x.description);
+            switch (sortBy)
+            {
+                case "category":
+                    items = item.ThenBy(x => x.category);
+                    break;
+                case "serialNumber":
+                    items = item.ThenBy(x => x.serial_number);
+                    break;
+                case "purchaseDate":
+                    items = item.ThenBy(x => x.purchase_date);
+                    break;
+                case "assignedEmployee":
+                    items = item.ThenBy(x => x.assigned_employee);
+                    break;
+                case "loggedDate":
+                    items = item.ThenBy(x => x.logged_date);
+                    break;
+                case "loggedEmployee":
+                    items = item.ThenBy(x => x.logged_employee);
+                    break;
+                case "quantity":
+                    items = item.ThenBy(x => x.quantity);
+                    break;
+            }
+            return items;
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Test Function
+        public String getPurchaseTime(Villa.Inventory.Manager.Models.HomeModel inventoryDetails)
+        {
+            return inventoryDetails.InventoryEditItem.purchase_time_string.ToString("HH:mm:ss tt");
+        }
+        
+//------------------------------------------------------------------------------------------------------------------------- 
+      
+//Enter row into Database / Edit row in Database
+        public ActionResult UpdateInventory(Villa.Inventory.Manager.Models.HomeModel inventoryDetails, String submit)
+        {
+            int InventoryID = inventoryDetails.InventoryEditItem.inventory_id;
+            String action = "";
+            String error = "";
+
+            var sql = "";
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                
+                if (String.Equals(submit, "new")) {
+    //Enter New Row
+                    if (InventoryID == 0)
+                    {
+                        sql = @"INSERT INTO Table_6 (description, category, quantity, serial_number, purchase_date, assigned_employee, logged_date, logged_employee, notes)
+                                    VALUES (@Description, @Category, @Quantity, @SerialNumber, @PurchaseDate, @AssignedEmployee, @LoggedDate, @LoggedEmployee, @Notes)";
+                        
+                        action = "Insert";
+                    }
+    //Updating Existing Row
+                    else
+                    { 
+                        sql = @"UPDATE Table_6 SET description = @Description, category = @Category, quantity= @Quantity, serial_number=@SerialNumber, purchase_date=@PurchaseDate,
+                                    assigned_employee=@AssignedEmployee, logged_date=@LoggedDate, logged_employee=@LoggedEmployee, notes=@Notes WHERE inventory_id =@InventoryID";
+                       
+                        action = "Update";
+                    }
+                    error = executeSQL(inventoryDetails, sql);
+                }
+                else if (String.Equals(submit, "delete"))
+                {
+                    action = "Delete";
+                    error = DeleteInventoryItem(inventoryDetails);
+                    
+                }
+            }            
+            return RedirectToAction("Index", new { action = action, error = error });
+            
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Executes the SQL Command recieved from the UpdateInventory function
+        public String executeSQL(Villa.Inventory.Manager.Models.HomeModel inventoryDetails, string sql)
+        {
+            InventoryItem inventory = inventoryDetails.InventoryEditItem;
+
+            if (inventory.quantity == 0)
+            {
+                inventory.quantity = 1;
+            }
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    conn.Open();
+                    
+                    cmd.Parameters.AddWithValue("@Description", inventory.description);
+                    cmd.Parameters.AddWithValue("@Category", inventory.category);
+                    cmd.Parameters.AddWithValue("@Quantity", inventory.quantity);
+                    cmd.Parameters.AddWithValue("@SerialNumber", inventory.serial_number);
+                    cmd.Parameters.AddWithValue("@PurchaseDate", formatDate(inventory.purchase_date_string, inventory.purchase_time_string));
+                    cmd.Parameters.AddWithValue("@AssignedEmployee", inventory.assigned_employee);
+                    cmd.Parameters.AddWithValue("@LoggedDate", DateTime.Now);//automatically inserts current time
+                    cmd.Parameters.AddWithValue("@LoggedEmployee", User.Identity.Name);//automatically inserts User -- outdated: inventory.logged_employee);
+                    cmd.Parameters.AddWithValue("@Notes", inventory.notes);
+                    cmd.Parameters.AddWithValue("@InventoryID", inventory.inventory_id);//only used if updating
+
+                    foreach (SqlParameter parameter in cmd.Parameters)
+                    {
+                        if (parameter.Value == null)
+                        {
+                            parameter.Value = "";
+                        }
+                    }
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception e)
+                    {
+                        return(e.Message);                        
+                    }
+                    
+                }
+            }
+            return null;
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Sets DateTime input to correct format to be inserted into Database
+        public DateTime formatDate(DateTime date, DateTime time)
+        {
+            String formatted_purchase_date = date.ToString("d")+" "+time.ToString("HH:mm:ss tt");
+            return Convert.ToDateTime(formatted_purchase_date);
+            
+        }
+//-------------------------------------------------------------------------------------------------------------------------
+
+//Delete Row from the Database
+        public String DeleteInventoryItem(Villa.Inventory.Manager.Models.HomeModel inventoryDetails)
+        {
+            int InventoryID = inventoryDetails.InventoryEditItem.inventory_id;
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["InventoryConnection"].ConnectionString))
+            {
+                var sql = @"DELETE FROM Table_6 WHERE inventory_id = @inventoryID";
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@inventoryID", InventoryID);
+                    conn.Open();
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception e)
+                    {
+                        return (e.Message);
+                    }
+                }            
+            }
+            return null;
+        }
+
+        public ActionResult EditAccount()
+        {
+            //System.Diagnostics.Debug.WriteLine("------------------------------------- id: " + id);
+            return RedirectToAction("EditProfile","Account");
+           
+        }        
+
+    }
+
+
+//-------------------------------------------------------------------------------------------------------------------------
+    
+}
+/*
+  
+TODO:
+    Fix the bug where navigating back can re-log a user into the page (NOTE: User can navigate back to the table and view it, but cannot execute any functions on it).
+
+*/
+
+//_______________________________________________________________________________________________________
+
+/*
+    Inventory Database:
+    
+    inventory_id        int             auto-incrementing primary key
+    description         nchar(100)      Allow Nulls
+    category            nchar(100)      Allow Nulls
+    quantity            int             Allow Nulls        
+    serial_number       nchar(100)      Allow Nulls
+    purchase_date       datetime2(7)    Allow Nulls
+    assigned_employee   nchar(100)      Allow Nulls
+    logged_date         datetime2(7)    Allow Nulls
+    logged_employee     nchar(100)      Allow Nulls
+    notes               nchar(250)      Allow Nulls
+
+
+*/

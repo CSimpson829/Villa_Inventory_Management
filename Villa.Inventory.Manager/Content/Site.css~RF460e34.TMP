@@ -1,0 +1,120 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    /*background-color:#f4eded;*/
+    background-color:#e6e6e6;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+   /* padding-left: 10px;
+    padding-right: 10px;*/
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    /*max-width: 280px;*/
+}
+
+#title {
+    /*width:90%;*/
+    text-align:left;
+    margin-bottom: 30px;
+}
+
+#nav{
+    padding-top:2px;
+    margin-top:-48px;
+    background-color:white;
+}
+
+#villaLogo{
+    height:60px;
+    margin-left:5px;
+}
+
+.panel-body{
+    border-style:solid;
+    border-width:1px;
+    border-color:lightgray;
+}
+
+.panel-heading{
+    background-color:#a83338;/*#910e0e*/
+    margin:5px;
+    color:white;
+}
+
+.panel-body input{
+    margin-bottom:5px;
+}
+
+.panel-body label{
+    font-size:11px;
+}
+
+#tablePanel{
+     /*width:90%;*/
+     /*min-width:1200px;*/
+     margin:auto;
+}
+
+#newItemButton, #editButton{
+    width:90%;
+    margin-left:5%;
+    margin-right:5%;
+    margin-bottom:5px;
+    background-color:#e54747;
+    color:white;
+}
+
+#newItemButton, #editButton{
+    font-weight:bold;
+}
+
+#newItemButton:hover{
+    background-color:#e23636;
+}
+
+#editButton:hover{
+    background-color:#C13131;
+}
+
+.modal input{
+    margin-bottom:5px;
+}
+
+#modalButton, #removeButton, #deleteConfirmButton{
+    background-color:white;
+    font-weight:bolder;
+}
+
+#modalButton:hover{
+    background-color:#e6e6e6;/*#f2f2f2;#beb4b4;#e8b4b4;*/
+    color:black;
+}
+
+#removeButton:hover, #deleteConfirmButton:hover{
+    background-color:#de403b;/*#d12a2c;#800000;#ff0000;#e54747;*/
+    color:white;
+}
+
+.modal-header{
+    margin-bottom:10px;
+    background-color:#a83338;
+    color:white;
+    font-size:large;
+}
+
+#confirmModalHeader{
+
+}

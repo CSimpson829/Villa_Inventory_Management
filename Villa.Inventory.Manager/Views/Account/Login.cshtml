@@ -1,0 +1,62 @@
+﻿@using Villa.Inventory.Manager.Models
+@model LoginModel
+@{
+    //ViewBag.Title = "Log in";
+}
+
+<h2>@ViewBag.Title</h2>
+<div class="container">
+    <div class="row">
+        <div class="container" id="loginContainer">
+            <div class="page-header">
+                <img id="loginLogo" src="~/Content/Images/VillaLogo_Lg.png" />
+            </div>
+            <form role="form" action="@Url.Action("Login", "Account")" method="post">
+                <!--EMAIL--> 
+                <div class="username" style="margin-bottom:5px">
+                    <div class="input-group">
+                        <div class="input-group-addon">
+                            <span id="usernameIcon" class="glyphicon glyphicon-user"></span>
+                        </div>
+                        @Html.TextBoxFor(x => x.Email, new { @class = "form-control input", id="loginUsernameInput", required = "true", placeholder = "Username or Email", autofocus = "autofocus" })
+                    </div>
+                </div>            
+                <!-- PASSWORD -->
+                <div class="password">
+                    <div class="input-group" id="passwordInputGroup">
+                        <div id="passwordIcon" class="input-group-addon">
+                            <span class="fa fa-key"></span>
+                        </div>
+                        @Html.TextBoxFor(x => x.Password, new { @class = "form-control input", id="loginPasswordInput", type = "password", required = "true", placeholder = "Password" })
+                    </div>                      
+                </div>
+                <!-- REMEMBER ME -->
+                <div class="rememberMe">
+                    @Html.CheckBoxFor(x => x.RememberMe)
+                    <span id="rememberMeSpan">Remember Me</span>
+                </div>
+                <div class="page-footer">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <button class="btn pull-left" type="submit" id="loginPanelButton">Login</button>
+                        </div>
+                        <div class="col-xs-6">
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <p id="errorText" style="color:red">Incorrect Username and/or Password</p>
+                            }
+                                <p hidden id="emptyInputErrorText">Username and Password Required</p>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </form>            
+        </div><!--End Container-->
+    </div>
+</div>
+<script type="text/javascript" src="~/Javascript/testJavaScript.js"></script>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+}

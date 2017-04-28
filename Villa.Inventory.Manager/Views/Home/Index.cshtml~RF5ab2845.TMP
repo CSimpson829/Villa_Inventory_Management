@@ -1,0 +1,180 @@
+﻿
+@model Villa.Inventory.Manager.Models.HomeModel
+
+@{
+
+    ViewBag.Title = "Home Page";
+}
+<!--
+    <div class="jumbotron">
+        <h1>ASP.NET</h1>
+        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+        <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    </div>
+-->
+
+<div class="container-fluid">
+    <div>
+        <h2 id="title">
+            VILLA Equipment Management
+        </h2>
+    </div>
+
+   
+        <div class="row">
+            <div class="col-md-12" id="tablePanel">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <h4><strong>Equipment Logs</strong></h4>
+                            </div>
+                            <div class="col-xs-6">
+                                <button class="btn pull-right" data-toggle="modal" data-target="#inputModal" id="modalButton">
+                                <span class="glyphicon glyphicon-plus-sign"></span> Add New Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <!--<p><strong>Placeholder for Data Table</strong> <br \ /> ...<br/>...<br />...</p>-->
+                        <table class="table table-hover table-striped" id="equipmentTable">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Serial Number</th>
+                                    <th>Purchase Date</th>
+                                    <!--<th>Purchase Time</th>-->
+                                    <th>Assigned Employee</th>
+                                    <th>Logged Date</th>
+                                    <th>Logged Time</th>
+                                    <th>Logged Employee</th>
+                                    <th>Notes</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.InventoryItem)
+                                {
+                                    <tr>
+                                        <td>@item.description</td>
+                                        <td>@item.category</td>
+                                        <td>@item.quantity</td>
+                                        <td>@item.serial_number</td>
+                                        <td>@item.purchase_date.ToString("d")</td>
+                                        <!--<td>@item.purchase_date.ToString("t")</td>-->
+                                        <td>@item.assigned_employee</td>
+                                        <td>@item.logged_date.ToString("d")</td>
+                                        <td>@item.logged_date.ToString("t")</td>
+                                        <td>@item.logged_employee</td>
+                                        <td>@item.notes</td>
+                                        <td><button type="button" class="btn btn-xs" id="editButton" onclick="printInfo(@item.description)">
+                                            <span class="glyphicon glyphicon-edit"/>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!--end panel-->
+            </div><!--end col-md-8-->
+        </div><!--end row-->
+
+     
+
+    <div class="modal fade" role="dialog" id="inputModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" id="newItemModalHeader">
+                    <p><strong>Add New Item</strong></p>
+                </div>
+                <form id="editInventory" method="post" action="@Url.Action("UpdateInventory","Home")">
+                    <div class="container">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <!--<label for="itemDesc">Item Description:</label>
+                                    <input type="text" class="form-control" id="itemDesc" />-->
+                                    @Html.LabelFor(x => x.InventoryEditItem.description)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.description,  new { @class ="form-control", required = "true", id="descriptionInput" })
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x=>x.InventoryEditItem.category)
+                                    @Html.DropDownListFor(x => x.InventoryEditItem.category, new SelectList(Enum.GetValues(typeof(Villa.Inventory.Manager.Models.categoryEnum))),"--Select One--", new { @class="form-control", required = "true" })                                    
+                                </div>
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x=>x.InventoryEditItem.quantity)
+                                    @Html.TextBoxFor(x=>x.InventoryEditItem.quantity, new { @class="form-control", type="number"})
+                                    
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.serial_number)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.serial_number, new { @class="form-control"})
+                                    
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.purchase_date_string)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.purchase_date_string, new { @class="form-control", type="date", required="true"})                                   
+                                </div>
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.purchase_time_string)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.purchase_time_string, new { @class="form-control", type="time", required="true"})
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.assigned_employee)
+                                    @Html.TextBoxFor(x=>x.InventoryEditItem.assigned_employee, new { @class="form-control"})
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.logged_employee)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.logged_employee, new { @class="form-control"})
+                                    
+                                </div>
+                            </div>
+                    <!--
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.logged_date_string)
+                                    @Html.TextBoxFor(x=> x.InventoryEditItem.logged_date_string, new { @class="form-control", type="date"})
+                                    
+                                </div>
+                                <div class="col-sm-6">
+                                    @Html.LabelFor(x => x.InventoryEditItem.logged_time_string)
+                                    @Html.TextBoxFor(x => x.InventoryEditItem.logged_time_string, new { @class="form-control", type="time"})                                   
+                                </div>
+                            </div>
+                    -->
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    @Html.LabelFor(x => x.InventoryEditItem.notes)
+                                    @Html.TextAreaFor(x=>x.InventoryEditItem.notes, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div><!--end form group-->
+                    </div><!--end container-->
+
+                    <div class="panel-footer">
+                        <button type="submit" class="btn" id="newItemButton">Submit</button>
+                    </div>
+                </form>
+            </div><!--end modal-content-->
+        </div><!--end modal-dialog-->
+    </div><!--end modal-->
+</div>
+<script type="text/javascript" src="~/Javascript/testJavaScript.js"></script>
+
+
+
+

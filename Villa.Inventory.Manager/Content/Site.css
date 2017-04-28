@@ -1,0 +1,473 @@
+﻿
+body {
+    /*padding-top: 50px;*/
+    padding-bottom: 20px;
+    background-color:#e6e6e6;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+   /* padding-left: 10px;
+    padding-right: 10px;*/
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    /*max-width: 280px;*/
+}
+
+/*removes Bootstrap button blue outlines*/
+button:focus{
+    outline:none !important;
+}
+/* ============================================== SHARED ==================================================== */
+.panel-body{
+    border-style:solid;
+    border-width:1px;
+    border-color:lightgray;
+}
+.panel-body input{
+    margin-bottom:5px;
+}
+.panel-body label{
+    font-size:11px;
+}
+
+.modal input{
+    margin-bottom:5px;
+}
+
+.modal-header{
+    margin-bottom:10px;
+    background-color:#a83338;
+    color:white;
+    font-size:large;
+}
+.modalCloseButton{
+    color:white;
+    opacity:0.5;
+}
+.modalCloseButton:hover{
+    color:white;
+    opacity:0.7;
+}
+.modalCloseButton:active{
+    color:white;
+    opacity:1;
+}
+/* ============================================== /shared =================================================== */
+
+/* ============================================== _LAYOUT =================================================== */
+#title {
+    text-align:left;
+    margin-bottom: 30px;
+}
+
+#nav{
+    padding-top:2px;
+    background-color:white;
+    border-bottom:solid;
+    border-color:#d9d9d9;
+    border-bottom-width:thin;
+}
+#navContainer{
+    padding-left:15px;
+    padding-right:15px
+}
+
+#villaLogo{
+    height:60px;
+    margin-left:5px;
+}
+#logOutButton{
+    width:100%;
+    background-color:#4196cc;
+    color:white;
+}
+#logOutButton:hover{
+    background-color:#3082b5;
+}
+#logOutButton:active{
+    background-color:#25658d;
+}
+
+#logoutDropdown:hover{
+    background-color:#d3d3d3;
+}
+#logoutDropdown:active{
+    background-color:#bfbfbf;
+}
+
+#welcomeMessage{
+    margin-top:8px;
+    text-align:right;
+}
+/* ============================================== /_layout ================================================== */
+
+/* ============================================== INDEX ===================================================== */
+
+#changeDatabaseButton{
+    min-width:100%;
+    background-color:#e54747;
+    color:white;
+    font-weight:bold;
+    margin-bottom:5px;
+}
+#changeDatabaseButton:hover{
+    background-color:#e23636;
+}
+#changeDatabaseButton:active{
+    background-color:#df2020;
+}
+
+#changeDBInput{
+    max-width:50%;
+    margin-left:50%;
+    margin-bottom:5px;
+}
+/* ------------------------------------ Inventory Table --------------------------------- */
+#tablePanelHeading{
+    background-color:#a83338;
+    margin:5px;
+    color:white;
+}
+#tablePanel{
+     margin:auto;
+}
+
+#modalButton{
+    background-color:white;
+    font-weight:bolder;
+    color:black;
+}#modalButton:hover{
+    background-color:#e6e6e6;
+    color:black;
+}
+#modalButton:active{
+    background-color:#cccccc;
+    color:black;
+}
+#modalButton{
+    width:100%;
+}
+
+#tableDeleteButton{
+    background-color:#de403b;/*Red*/
+    color:white;
+}
+#tableDeleteButton:hover{
+    background-color:#c42721;
+    color:white;
+}
+#tableDeleteButton:active{
+    background-color:#991e1a;
+}
+
+#editButton{
+    background-color:#4196cc;
+    color:white;   
+}
+#editButton:hover{
+    background-color:#15608e;
+}
+#editButton:active{
+    background-color:#104b70;
+}
+
+#viewButton{
+    background-color:#d9d9d9;
+    color:gray;
+}
+#viewButton:hover{
+    background-color:#bfbfbf;
+    color:#595959;
+}
+#viewButton:active{
+    background-color:#999999;
+    color:#262626;
+}
+
+#exportButton{
+    background-color:#4196cc;
+    color:white;
+    font-weight:bold;
+    width:50%;
+}
+#exportButton:active{
+    background-color:#25658d;
+}
+#exportButton:hover{
+    background-color:#3082b5;
+}
+
+/* ------------------------------------ New Item / Edit Item Modal ----------------------*/
+#inputModalTitle{
+    font-weight:bolder;
+}
+
+#viewModalHeaderText, #inputModalTitle{
+    position:relative;
+    bottom:5px;
+    left:5px
+}
+
+#viewModal p{
+    margin-bottom:20px;
+}
+#viewModal strong{
+    color:#a83338;
+}
+#viewModalHeader strong{
+    color:white;
+}
+
+.datepicker table tr td.active.active{
+    background-color: #e54747;
+}
+.datepicker table tr td.active.active:hover{
+    background-color: #d74242;
+}
+.datepicker table tr td.active.active:active{
+    background-color:#d22d2d;
+}
+
+#newItemButton{
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-bottom: 5px;
+    background-color: #e54747;
+    color: white;
+    font-weight: bold;
+}
+#newItemButton:hover{
+    background-color:#e23636;
+}
+#newItemButton:active{
+    background-color:#df2020;
+}
+#deleteButton{
+    background-color:white;
+    color:black;
+    font-weight:bolder;
+}
+#deleteButton:hover{
+    background-color:#de403b;/*Red*/
+    color:white;
+}
+#deleteButton:active{
+    background-color:#c42721;
+    color:white;
+}
+#emptyRequiredErrorIcon{
+    color:red;
+    float:left;
+}
+#emptyRequiredError{
+    color:red;
+}
+#emptyRequiredErrorContainer{
+    margin-bottom:5px;
+    width:90%;
+    margin-left:5%;
+}
+
+/* ------------------------------------ Export Modal ------------------------------------ */
+#exportOptionsPanelBody select{
+    margin-bottom:5px;
+}
+
+#exportSubmitButton{
+    width:100%;
+    font-weight:bold;
+}
+#exportSubmitButton:hover, #addSortButton:hover, #removeSortButton:hover, #dateRangeToggle:hover{
+    background-color:#add2b9;
+}
+#exportSubmitButton:active, #addSortButton:active, #removeSortButton:active, #dateRangeToggle:active{
+    background-color:#8cc09c;
+    color:#3f734f;
+}
+#exportModalHeader{
+    background-color:#1b7e4d;
+}
+#excelModalHeaderText{
+    position:relative;
+    bottom:5px;
+    left:5px
+}
+#exportFilenameInput{
+    margin-top:5px;
+    display:inline;
+}
+
+/* ------------------------------------ View Modal -------------------------------------- */
+#viewModalEditButton{
+    background-color:white;
+    font-weight:bolder;
+    color:black;
+}
+ #viewModalEditButton:hover{
+    background-color:#4196cc;
+    color:white;
+}
+#viewModalEditButton:active{
+    background-color:#3082b5;
+}
+input[readonly] {
+    cursor: default;
+}
+input[readonly].default-cursor {
+    cursor: default;
+    background-color:#f5f5f5;
+}textarea[readonly].default-cursor {
+    cursor: default;
+    background-color:#f5f5f5;
+}
+#viewModal .input-group-addon{
+    background-color:#e1e1e1;
+}
+
+/* ------------------------------------ Delete Modal ------------------------------------ */
+#deleteCancelButton {
+    background-color: white;
+    font-weight: bolder;
+    color: black;
+}
+#deleteCancelButton{
+    margin-left:-10px;
+}
+#deleteCancelButton:hover{
+    background-color:#e6e6e6;
+    color:black;
+}
+#deleteCancelButton:active{
+    background-color:#cccccc;
+    color:black;
+}
+#deleteConfirmButton{
+    background-color:#4196cc;
+    color:white;
+    margin-left:10px;
+    font-weight:bolder;   
+}
+#deleteConfirmButton:hover{
+    background-color:#3082b5;
+}
+#deleteConfirmButton:active{
+    background-color:#15608e;
+}
+/* ============================================== /index ==================================================== */
+
+/* ============================================== LOGIN ===================================================== */
+ .password{
+     margin-bottom:10px;
+ }
+ .rememberMe{
+     margin-bottom:10px;
+ }
+ #rememberMeSpan{
+     margin-left:5px;
+ }
+#loginContainer {
+    max-width:50%;    
+    margin: auto;
+    margin-top:50px;
+    background-color: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border: solid;
+    border-width:thin;
+    border-color: #d9d9d9;
+}
+.loginAddon{
+    width:20%;
+}
+#errorText{
+    color:red;
+}
+#loginPanelHeader{     
+}
+
+#loginPanel{
+    width:75%;
+    margin:auto;
+}
+ 
+#loginPanelHeader h4{
+margin-left:5%;
+color:white;
+}
+#loginPanelButton{
+    width:100%;
+    background-color:#a83338;
+    color:white;
+    margin-bottom:10px;
+}
+#loginPanelButton:hover{
+    background-color:#9c3035;
+}
+#loginPanelButton:active{
+    background-color:#892a2f;
+}
+.loginHeaderDiv{
+    background-color:gray;
+}
+ #loginLogo{
+     width:100%;
+ }
+#loginContainer .input-group{
+     margin-bottom:15px;
+ }
+#loginContainer .input{
+    border: solid;
+    border-width:1px; 
+    border-color:#cccccc;
+}
+.rememberMe{
+    margin-bottom:20px
+}
+#emptyInputErrorText{
+    color:red;
+}
+
+/* ============================================== /login ==================================================== */
+
+/* ============================================== EDIT PROFILE ============================================== */
+
+.profilePanel{
+    width:70%;
+    margin:auto;
+}
+#profileSubmitButtonContainer{
+    width:70%;
+    margin:auto;
+}
+#editProfileSubmitButton{
+    width:100%;
+    font-weight:bolder;
+    color:white;
+    background-color:#4196cc;
+}
+#editProfileSubmitButton:hover{
+    background-color:#3082b5;
+}
+#editProfileSubmitButton:active{
+    background-color:#15608e;
+}
+#passwordPanelToggleButton:hover{
+    background-color:#cacaca;
+}
+#passwordPanelToggleButton:active{
+    background-color:#bfbfbf;
+}
+/* ============================================== /edit profile ============================================= */

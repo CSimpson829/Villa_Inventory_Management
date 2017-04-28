@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Villa Inventory Manager</title>
+    <link rel="icon" href="~/Content/Images/favicon.ico" type="image/x-icon" />
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/dataTables")
+    @RenderSection("scripts", required: false)    
+</head>
+@{ 
+    ViewBag.welcome = "Welcome, " + User.Identity.Name;
+    string role = "";
+    string[] privilages = { "View","Export", "Create", "Edit", "Delete" };
+
+    if (User.IsInRole("User"))
+    {
+        role = "User";
+    }
+    else if (User.IsInRole("Manager"))
+    {
+        role = "Manager";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        role = "Admin";
+    }
+    
+}
+
+<body>
+    @if (User != null && User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <nav class="navbar navbar-default navbar-static-top" id="nav">
+            <div class="container-fluid" id="navContainer">
+                <div class="row">                    
+                    <div class="col-sm-6">
+                        <a href="/Home/Index"><img src="~/Content/Images/VillaLogo_Lg.png" id="villaLogo" /></a>
+                    </div> 
+                    <div class="col-sm-6">
+                        <form method="post" action="@Url.Action("LogOut","Account")">
+                            <div style="margin-right:20px; margin-top:10px">
+                                <div class="row">
+                                    <div class="col-xs-8">
+                                        <div id="welcomeMessage">
+                                            @ViewBag.welcome
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <!--<button type="button" class="btn pull-right" id="loginButton" data-toggle="modal" data-target="#loginModal"><span class="fa fa-user-times"></span> Log Out</button>-->
+                                        <!--<button type="submit" class="btn pull-right" id="logOutButton"><span class="fa fa-sign-out"></span> Log Out</button>-->
+                                        <div class="dropdown">
+                                            <button type="button" class="btn dropdown-toggle" id="logoutDropdown" data-toggle="dropdown"><span class="glyphicon glyphicon-user">&nbsp;</span><span class="fa fa-caret-down"></span></button>
+                                            <div class="dropdown-menu dropdown-menu-" id="logoutDropdownMenu">
+                                                <div class="container">
+                                                    <!--<p class="dropdown-item">@User.Identity.Name</p>-->
+                                                    <p>@User.Identity.Name</p>
+                                                    <p class="dropdown-item">@role</p>
+                                                    <span>Privilages:</span>
+                                                        <ul class="dropdown-item">
+                                                            <li>@privilages[0]</li>
+                                                            <li>@privilages[1]</li>
+                                                            @if (role == "Admin" || role == "Manager")
+                                                            {
+                                                                <li>@privilages[2]</li>
+                                                                <li>@privilages[3]</li>
+                                                                <li>@privilages[4]</li>
+                                                            }
+                                                        </ul>
+                                                    <a href="@Url.Action("EditProfile","Account")" id="accountDetailsButton" style="text-align:center"><span class="fa fa-gear">&nbsp;</span>User Profile</a>
+                                                    <div class="divider"></div>
+                                                    <button type="submit" class="dropdown-item btn pull-right" id="logOutButton"><span class="fa fa-sign-out"></span> Log Out</button>
+                                                </div>                                                
+                                            </div><!--end of Dropdown-menu-->                                            
+                                        </div><!--end of Dropdown-->
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>  
+                </div> 
+            </div>
+        </nav>
+    }
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year <!--- My ASP.NET Application--></p>
+        </footer>
+    </div>
+</body>
+
+
+
+</html>
